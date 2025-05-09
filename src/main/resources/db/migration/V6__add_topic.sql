@@ -1,0 +1,2 @@
+ALTER TABLE problems
+    ADD COLUMN topic VARCHAR(100) NOT NULL DEFAULT '';

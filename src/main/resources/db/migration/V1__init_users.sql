@@ -4,3 +4,4 @@ CREATE TABLE users (
                        username VARCHAR(50) NOT NULL UNIQUE,
                        created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now()
 );
+
