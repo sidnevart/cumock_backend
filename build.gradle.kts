@@ -5,6 +5,16 @@ buildscript {
 	}
 }
 
+sourceSets {
+	main {
+		resources {
+			srcDirs("src/main/resources")
+			include("**/*.sql")
+
+		}
+	}
+}
+
 plugins {
 	java
 	id("org.springframework.boot") version "3.4.5"
@@ -60,4 +70,12 @@ flyway {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+	testLogging {
+		events("passed", "failed", "skipped", "standardOut", "standardError")
+		showStandardStreams = true // 👈 ключевая настройка
+	}
+}
+
+tasks.processResources {
+	duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.EXCLUDE
 }

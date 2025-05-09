@@ -1,6 +1,6 @@
 -- V2__add_auth_fields.sql
 ALTER TABLE users
-    ADD COLUMN email VARCHAR(255),
+  ADD COLUMN email VARCHAR(255),
   ADD COLUMN password_hash VARCHAR(255),
   ADD COLUMN email_verified BOOLEAN DEFAULT false,
   ADD COLUMN verification_code VARCHAR(64),
