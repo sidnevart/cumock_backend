@@ -2,6 +2,7 @@ package com.example.cumock.model;
 
 import jakarta.persistence.*;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
@@ -25,7 +26,7 @@ public class User {
     @Column(name = "telegram_id", unique = true)
     private Long telegramId;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false)
     private Timestamp createdAt;
 
     @Column(nullable = false, unique = true)
@@ -34,8 +35,15 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = Timestamp.valueOf(LocalDateTime.now());
+    }
+
     public Role getRole() { return role; }
     public void setRole(Role role) { this.role = role; }
+
 
 
 

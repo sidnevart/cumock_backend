@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/admin")
+@RequestMapping("api/admin")
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
@@ -72,7 +72,7 @@ public class AdminController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping
+    @GetMapping("/problems")
     public ResponseEntity<List<ProblemResponse>> getAll(
             @RequestParam(required = false) String topic,
             @RequestParam(required = false) String title,

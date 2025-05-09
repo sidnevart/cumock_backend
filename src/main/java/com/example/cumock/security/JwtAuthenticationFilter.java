@@ -32,23 +32,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        String token = authHeader.substring(7); // без "Bearer "
+        String token = authHeader.substring(7); // убираем "Bearer "
 
-        Claims claims = jwtService.extractAllClaims(token);
-        if (claims != null && claims.getSubject() != null) {
-            UsernamePasswordAuthenticationToken auth =
-                    new UsernamePasswordAuthenticationToken(
-                            claims.getSubject(), null, Collections.emptyList());
+        try {
+            Claims claims = jwtService.extractAllClaims(token);
 
-            auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(auth);
+            if (claims != null && claims.getSubject() != null) {
+                UsernamePasswordAuthenticationToken auth =
+                        new UsernamePasswordAuthenticationToken(
+                                claims.getSubject(), null, Collections.emptyList());
+
+                auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(auth);
+            }
+        } catch (Exception e) {
+            // ❗ Не валидный токен — просто игнорируем
+            System.out.println("JWT is invalid or expired: " + e.getMessage());
         }
 
         filterChain.doFilter(request, response);
+
     }
 }
