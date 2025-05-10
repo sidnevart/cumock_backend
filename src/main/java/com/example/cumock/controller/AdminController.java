@@ -22,8 +22,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/admin")
-@PreAuthorize("hasRole('ADMIN')")
+@RequestMapping("/api/admin")
+// @PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
     private final UserRepository userRepository;
@@ -61,7 +61,7 @@ public class AdminController {
      * * * * * * * * * * * * * * * * * * * * * * * *  PROBLEMS  * * * * * * * * * * * * * * * * * * * * * * * *
      */
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping
+    @PostMapping("/problems")
     public ResponseEntity<Void> createProblem(@RequestBody CreateProblemRequest request) {
         Problem problem = new Problem();
         problem.setTitle(request.getTitle());
@@ -78,6 +78,8 @@ public class AdminController {
             @RequestParam(required = false) String title,
             @RequestParam(required = false) String difficulty
     ) {
+        System.out.println(">>> AdminController HIT");
+
         List<Problem> problems;
 
         if (topic != null && title != null && difficulty != null) {
@@ -130,7 +132,7 @@ public class AdminController {
         return ResponseEntity.ok(response);
     }
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/{id}")
+    @PutMapping("/problems/{id}")
     public ResponseEntity<?> updateProblem(@PathVariable Long id, @RequestBody UpdateProblemRequest request) {
         Problem problem = problemRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Problem not found"));
@@ -145,7 +147,7 @@ public class AdminController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/problems/{id}")
     public ResponseEntity<?> deleteProblem(@PathVariable Long id) {
         if (!problemRepository.existsById(id)) {
             return ResponseEntity.notFound().build();

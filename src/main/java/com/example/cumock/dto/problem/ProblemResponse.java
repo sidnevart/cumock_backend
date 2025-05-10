@@ -9,6 +9,7 @@ public class ProblemResponse {
 
     public ProblemResponse(Long id, String title, String difficulty, String topic) {
         this.id = id;
+
         this.title = title;
         this.difficulty = difficulty;
         this.topic = topic;

@@ -1,6 +1,8 @@
 package com.example.cumock.controller;
 
 
+import com.example.cumock.dto.problem.CreateProblemRequest;
+import com.example.cumock.dto.problem.UpdateProblemRequest;
 import com.example.cumock.model.Problem;
 import com.example.cumock.repository.ProblemRepository;
 import com.example.cumock.service.JwtService;
@@ -22,7 +24,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -96,17 +99,77 @@ class AdminProblemControllerIntegrationTest {
 
     @Test
     void shouldReturnProblemsForAdmin() throws Exception {
+        System.out.println(">>> JWT used in test: " + jwt);
 
         mockMvc.perform(get("/api/admin/problems")
+                        .header("Authorization", "Bearer " + jwt)
+                        .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON))
+                .andDo(result -> {
+                    System.out.println(">>> STATUS: " + result.getResponse().getStatus());
+                    System.out.println(">>> BODY: " + result.getResponse().getContentAsString());
+                })
+                .andExpect(status().isOk());
+
+    }
+
+    @Test
+    void shouldCreateProblemAsAdmin() throws Exception {
+        CreateProblemRequest request = new CreateProblemRequest();
+        request.setTitle("Created by admin");
+        request.setDescription("Some desc");
+        request.setDifficulty("medium");
+        request.setTopic("graphs");
+
+        mockMvc.perform(post("/api/admin/problems")
+                        .header("Authorization", "Bearer " + jwt)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andDo(result -> {
                     System.out.println(">>> STATUS: " + result.getResponse().getStatus());
                     System.out.println(">>> BODY: " + result.getResponse().getContentAsString());
                 });
-                /*.andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.content.length()").value(2));*/
 
+
+        List<Problem> problems = problemRepository.findAll();
+        assertEquals(3, problems.size()); // 2 добавлены в @BeforeEach
+        assertTrue(problems.stream().anyMatch(p -> p.getTitle().equals("Created by admin")));
     }
+
+    @Test
+    void shouldUpdateProblemAsAdmin() throws Exception {
+        Problem existing = problemRepository.findAll().get(0);
+
+        UpdateProblemRequest request = new UpdateProblemRequest();
+        request.setTitle("Updated Title");
+        request.setDescription("Updated Description");
+        request.setDifficulty("hard");
+        request.setTopic("dp");
+
+        mockMvc.perform(put("/api/admin/problems/" + existing.getId())
+                        .header("Authorization", "Bearer " + jwt)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        Problem updated = problemRepository.findById(existing.getId()).orElseThrow();
+        assertEquals("Updated Title", updated.getTitle());
+        assertEquals("dp", updated.getTopic());
+    }
+
+
+    @Test
+    void shouldDeleteProblemAsAdmin() throws Exception {
+        Problem existing = problemRepository.findAll().get(0);
+
+        mockMvc.perform(delete("/api/admin/problems/" + existing.getId())
+                        .header("Authorization", "Bearer " + jwt))
+                .andExpect(status().isNoContent());
+
+        assertFalse(problemRepository.findById(existing.getId()).isPresent());
+    }
+
+
+
 }
