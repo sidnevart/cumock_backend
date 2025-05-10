@@ -1,6 +1,7 @@
 package com.example.cumock.controller;
 
 
+import com.example.cumock.dto.admin.CreateTestCaseRequest;
 import com.example.cumock.dto.problem.CreateProblemRequest;
 import com.example.cumock.dto.admin.UpdateUserRoleRequest;
 import com.example.cumock.dto.admin.UserAdminResponse;
@@ -8,16 +9,20 @@ import com.example.cumock.dto.problem.PaginatedResponse;
 import com.example.cumock.dto.problem.ProblemResponse;
 import com.example.cumock.dto.problem.UpdateProblemRequest;
 import com.example.cumock.model.Problem;
+import com.example.cumock.model.ProblemTestCase;
 import com.example.cumock.model.User;
 import com.example.cumock.repository.ProblemRepository;
+import com.example.cumock.repository.ProblemTestCaseRepository;
 import com.example.cumock.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -28,10 +33,12 @@ public class AdminController {
 
     private final UserRepository userRepository;
     private final ProblemRepository problemRepository;
+    private final ProblemTestCaseRepository testCaseRepository;
 
-    public AdminController(UserRepository userRepository, ProblemRepository problemRepository) {
+    public AdminController(UserRepository userRepository, ProblemRepository problemRepository, ProblemTestCaseRepository testCaseRepository) {
         this.userRepository = userRepository;
         this.problemRepository = problemRepository;
+        this.testCaseRepository = testCaseRepository;
     }
 
     /*
@@ -155,5 +162,68 @@ public class AdminController {
         problemRepository.deleteById(id);
         return ResponseEntity.noContent().build(); // 204
     }
+
+
+    @PostMapping("/problems/{problemId}/tests")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> addTestCase(
+            @PathVariable Long problemId,
+            @RequestBody CreateTestCaseRequest req
+    ) {
+        Problem problem = problemRepository.findById(problemId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        ProblemTestCase testCase = new ProblemTestCase();
+        testCase.setProblem(problem);
+        testCase.setInput(req.getInput());
+        testCase.setExpectedOutput(req.getExpectedOutput());
+        testCase.setSample(req.isSample());
+        testCase.setPvp(req.isPvp());
+
+        testCaseRepository.save(testCase);
+
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @DeleteMapping("/problems/{problemId}/tests/{testId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteTestCase(
+            @PathVariable Long problemId,
+            @PathVariable Long testId
+    ) {
+        ProblemTestCase testCase = testCaseRepository.findById(testId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        if (!testCase.getProblem().getId().equals(problemId)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
+        testCaseRepository.delete(testCase);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/problems/{problemId}/tests/{testId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> updateTestCase(
+            @PathVariable Long problemId,
+            @PathVariable Long testId,
+            @RequestBody CreateTestCaseRequest req
+    ) {
+        ProblemTestCase testCase = testCaseRepository.findById(testId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        if (!testCase.getProblem().getId().equals(problemId)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
+        testCase.setInput(req.getInput());
+        testCase.setExpectedOutput(req.getExpectedOutput());
+        testCase.setSample(req.isSample());
+        testCase.setPvp(req.isPvp());
+
+        testCaseRepository.save(testCase);
+        return ResponseEntity.ok().build();
+    }
+
 
 }
