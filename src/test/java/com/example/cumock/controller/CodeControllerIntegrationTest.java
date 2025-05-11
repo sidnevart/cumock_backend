@@ -1,6 +1,7 @@
 package com.example.cumock.controller;
 
 import com.example.cumock.dto.code_sandbox.CodeRequest;
+import com.example.cumock.dto.code_sandbox.SubmissionRequest;
 import com.example.cumock.model.Problem;
 import com.example.cumock.model.ProblemTestCase;
 import com.example.cumock.model.Role;
@@ -48,6 +49,7 @@ public class CodeControllerIntegrationTest {
     void setup() {
         testCaseRepository.deleteAll();
         problemRepository.deleteAll();
+        userRepository.deleteAll();
 
         Problem problem = new Problem();
         problem.setTitle("Sum");
@@ -104,5 +106,30 @@ public class CodeControllerIntegrationTest {
                     System.out.println(">>> BODY: " + result.getResponse().getContentAsString());
                 });
     }
+
+
+    @Test
+    void shouldSubmitSuccessfullyWithJwt() throws Exception {
+        SubmissionRequest request = new SubmissionRequest();
+        request.setProblemId(problemId);
+        request.setLanguage("python");
+        request.setCode("print(sum(map(int, input().split())))");
+        request.setUserId(userRepository.findAll().get(0).getId());
+        request.setPvp(false); // в будущем можно протестить и true
+
+        mockMvc.perform(post("/api/code/submit")
+                        .header("Authorization", "Bearer " + jwt)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.passed").value(2))
+                .andExpect(jsonPath("$.failed").value(0))
+                .andExpect(jsonPath("$.verdict").value("OK"))
+                .andDo(result -> {
+                    System.out.println(">>> SUBMIT STATUS: " + result.getResponse().getStatus());
+                    System.out.println(">>> SUBMIT BODY: " + result.getResponse().getContentAsString());
+                });
+    }
+
 }
 

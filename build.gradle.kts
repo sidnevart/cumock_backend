@@ -9,7 +9,6 @@ sourceSets {
 	main {
 		resources {
 			srcDirs("src/main/resources")
-			include("**/*.sql")
 
 		}
 	}
@@ -44,6 +43,11 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-web")
+	implementation("org.springframework.boot:spring-boot-starter-websocket")
+	implementation("org.springframework.boot:spring-boot-starter-data-redis")
+
+
+
 
 	implementation("org.flywaydb:flyway-core")
 	implementation("org.flywaydb:flyway-database-postgresql:10.4.1")
@@ -60,14 +64,13 @@ dependencies {
 	testImplementation("org.springframework.amqp:spring-rabbit-test")
 	testImplementation("org.springframework.security:spring-security-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("org.springframework.amqp:spring-rabbit-test") // если нужно
+	testImplementation("org.springframework.security:spring-security-test")
+	testImplementation("it.ozimov:embedded-redis:0.7.2") // опционально для embedded Redis
 }
 
-flyway {
-	url = "jdbc:postgresql://localhost:5432/postgres"
-	user = "postgres"
-	password = "postgres"
-	locations = arrayOf("classpath:db/migration")
-}
 
 
 tasks.withType<Test> {

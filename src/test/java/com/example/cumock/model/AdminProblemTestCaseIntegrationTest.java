@@ -15,7 +15,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -38,8 +37,6 @@ public class AdminProblemTestCaseIntegrationTest {
     @Autowired private ProblemTestCaseRepository testCaseRepository;
     @Autowired private JwtService jwtService;
     @Autowired private UserRepository userRepository;
-    @Autowired
-    private EntityManager entityManager;
 
     private String jwt;
     private Long problemId;
@@ -148,7 +145,6 @@ public class AdminProblemTestCaseIntegrationTest {
 
     @Test
     void shouldReturnBadRequestIfProblemIdMismatch() throws Exception {
-        // Создаём другой тест
         Problem anotherProblem = new Problem();
         anotherProblem.setTitle("Other");
         anotherProblem.setDescription("...");
